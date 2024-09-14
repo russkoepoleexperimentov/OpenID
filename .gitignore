@@ -145,6 +145,10 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+test.db
+
+alembic/versions/
+
 # Pyre type checker
 .pyre/
 
