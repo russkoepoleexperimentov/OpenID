@@ -4,11 +4,11 @@ from pydantic import BaseModel
 
 
 class UserSchema(BaseModel):
-    name: Optional[str]
-    surname: Optional[str]
+    name: Optional[str] = None
+    surname: Optional[str] = None
     username: str
     email: str
-    disabled: bool
+    disabled: bool = False
 
 
 class UserUpdateSchema(BaseModel):
@@ -16,15 +16,20 @@ class UserUpdateSchema(BaseModel):
     name: Optional[str] = None
     surname: Optional[str] = None
     email: Optional[str] = None
-    disabled: Optional[bool] = None
+    disabled: Optional[bool] = False
 
 
 class UserCreateSchema(UserSchema):
     password: str
 
 
-class UserModelSchema(UserCreateSchema):
+class UserOutSchema(UserSchema):
     id: int
 
     class Config:
         from_attributes = True
+
+
+class UserAuthenticateSchema(BaseModel):
+    username: str
+    password: str

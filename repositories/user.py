@@ -1,3 +1,5 @@
+from typing import Type
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -13,7 +15,7 @@ class UserRepository:
         db.refresh(user)
         return user
 
-    def read(self, db: Session, user_id: int) -> UserModelSchema:
+    def read(self, db: Session, user_id: int) -> UserOutSchema:
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
 
         if not user:
@@ -21,7 +23,7 @@ class UserRepository:
 
         return user
 
-    def update(self, db: Session, schema: UserUpdateSchema) -> UserModelSchema:
+    def update(self, db: Session, schema: UserUpdateSchema) -> UserOutSchema:
         user = db.query(UserModel).filter(UserModel.id == schema.id).first()
 
         if not user:
@@ -34,7 +36,7 @@ class UserRepository:
         db.refresh(user)
         return user
 
-    def delete(self, db: Session, user_id: int) -> UserModelSchema:
+    def delete(self, db: Session, user_id: int) -> UserOutSchema:
         user = db.query(UserModel).filter(UserModel.id == user_id).first()
 
         if not user:
@@ -42,4 +44,15 @@ class UserRepository:
 
         db.delete(user)
         db.commit()
+        return user
+
+    def authenticate(self, db: Session, username: str, hashed_password: str) -> UserOutSchema:
+        user: Type[UserModel] = db.query(UserModel).filter(UserModel.username == username).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user.password != hashed_password:
+            raise HTTPException(status_code=403, detail="Invalid authentication data")
+
         return user
