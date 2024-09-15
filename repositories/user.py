@@ -8,8 +8,8 @@ from schemas.user import *
 
 
 class UserRepository:
-    def create(self, db: Session, schema: UserCreateSchema) -> UserModel:
-        user = UserModel(**schema.model_dump())
+    def create(self, db: Session, schema: UserCreateSchema, access_token) -> UserModel:
+        user = UserModel(**schema.model_dump(), access_token=access_token)
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -23,13 +23,13 @@ class UserRepository:
 
         return user
 
-    def update(self, db: Session, schema: UserUpdateSchema) -> UserOutSchema:
-        user = db.query(UserModel).filter(UserModel.id == schema.id).first()
+    def update(self, db: Session, schema: UserUpdateSchema, user_id: int) -> UserOutSchema:
+        user = db.query(UserModel).filter(UserModel.id == user_id).first()
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        for key, value in schema.dict(exclude_unset=True).items():
+        for key, value in schema.dict(exclude_unset=True, exclude={'access_token'}).items():
             setattr(user, key, value)
 
         db.commit()
@@ -46,7 +46,7 @@ class UserRepository:
         db.commit()
         return user
 
-    def authenticate(self, db: Session, username: str, hashed_password: str) -> UserOutSchema:
+    def authenticate(self, db: Session, username: str, hashed_password: str) -> UserTokenSchema:
         user: Type[UserModel] = db.query(UserModel).filter(UserModel.username == username).first()
 
         if not user:
@@ -54,5 +54,13 @@ class UserRepository:
 
         if user.password != hashed_password:
             raise HTTPException(status_code=403, detail="Invalid authentication data")
+
+        return UserTokenSchema(access_token=user.access_token)
+
+    def get_by_access_token(self, db: Session, token: str) -> UserOutSchema:
+        user: Type[UserModel] = db.query(UserModel).filter(UserModel.access_token == token).first()
+
+        if not user:
+            raise HTTPException(status_code=403, detail="Invalid token")
 
         return user

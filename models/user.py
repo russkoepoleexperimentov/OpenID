@@ -12,6 +12,8 @@ class UserModel(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
 
+    access_token = Column(String, unique=True, index=True, default="")
+
     name = Column(String, nullable=True)
     surname = Column(String, nullable=True)
 

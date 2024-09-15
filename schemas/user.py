@@ -3,6 +3,10 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+class UserTokenSchema(BaseModel):
+    access_token: str
+
+
 class UserSchema(BaseModel):
     name: Optional[str] = None
     surname: Optional[str] = None
@@ -11,8 +15,7 @@ class UserSchema(BaseModel):
     disabled: bool = False
 
 
-class UserUpdateSchema(BaseModel):
-    id: int
+class UserUpdateSchema(UserTokenSchema):
     name: Optional[str] = None
     surname: Optional[str] = None
     email: Optional[str] = None
@@ -32,4 +35,8 @@ class UserOutSchema(UserSchema):
 
 class UserAuthenticateSchema(BaseModel):
     username: str
+    password: str
+
+
+class UserDeleteSchema(UserTokenSchema):
     password: str
